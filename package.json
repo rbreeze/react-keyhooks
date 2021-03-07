@@ -1,6 +1,6 @@
 {
   "name": "@rbreeze/react-keypress",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Keybinding hooks for React",
   "main": "index.ts",
   "repository": "git://github.com/rbreeze/react-keypress.git",
