@@ -2,7 +2,7 @@
   "name": "@rbreeze/react-keypress",
   "version": "0.1.0",
   "description": "Keybinding hooks for React",
-  "main": "index.js",
+  "main": "index.ts",
   "repository": "git://github.com/rbreeze/react-keypress.git",
   "author": "Remington Breeze",
   "license": "MIT",
