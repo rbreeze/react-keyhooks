@@ -3,6 +3,7 @@ import * as React from "react";
 export enum Key {
   TAB = 9,
   ENTER = 13,
+  SHIFT = 16,
   ESCAPE = 27,
   LEFT = 37,
   UP = 38,
@@ -35,6 +36,7 @@ export enum Key {
   Y = 89,
   Z = 90,
   SLASH = 191,
+  QUESTION = 191,
 }
 
 export enum NumKey {
@@ -94,36 +96,96 @@ export const useNav = (
   return [pos, nav, reset];
 };
 
+export type KeyState = { action: KeyAction; pressed: boolean; group: number };
 export type KeyAction = (keyCode?: number) => boolean;
-export type KeyMap = { [key: number]: KeyAction };
+export type KeyMap = { [key: number]: KeyState };
 
 export const useKeyListener = (): ((
   keys: AnyKeys,
-  action: KeyAction
+  action: KeyAction,
+  combo?: boolean
 ) => void) => {
-  const keyMap = {} as KeyMap;
+  const groupForKey = {} as { [key: number]: number };
+
+  const groups = {} as { [group: number]: KeyMap };
+  let index = 0;
+
   const handlePress = (e: KeyboardEvent) => {
-    const action = keyMap[e.keyCode];
-    if (action) {
-      const prevent = action(e.keyCode);
-      if (prevent) {
-        e.preventDefault();
+    const g = groupForKey[e.keyCode];
+    if (groups[g]) {
+      let allPressed = true;
+      groups[g][e.keyCode].pressed = true;
+
+      for (const i of Object.keys(groups[g])) {
+        const k = parseInt(i, 10);
+        const key = groups[g][k];
+
+        if (!key.pressed) {
+          allPressed = false;
+        }
+      }
+
+      if (allPressed) {
+        const prevent = groups[g][e.keyCode].action(e.keyCode);
+        if (prevent) {
+          e.preventDefault();
+        }
       }
     }
   };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    const g = groupForKey[e.keyCode];
+    if (groups[g]) {
+      groups[g][e.keyCode].pressed = false;
+    }
+  };
+
   React.useEffect(() => {
     document.addEventListener("keydown", handlePress);
+    document.addEventListener("keyup", handleKeyUp);
     return () => {
       document.removeEventListener("keydown", handlePress);
+      document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [keyMap]);
-  return (keys, a) => {
+  }, [groupForKey, groups]);
+
+  return (keys, a, combo) => {
     if (Array.isArray(keys)) {
+      let g = index;
       for (const key of keys) {
-        keyMap[key as number] = a;
+        // create association between this key and its group
+        groupForKey[key] = index;
+
+        if (!groups[g]) {
+          groups[index] = {} as KeyMap;
+        }
+
+        groups[index][key] = {
+          group: g,
+          action: a,
+          pressed: false,
+        };
+
+        if (!combo) {
+          g = g + 1;
+        }
       }
+      index = g + 1;
     } else {
-      keyMap[keys as number] = a;
+      groupForKey[keys] = index;
+
+      if (!groups[index]) {
+        groups[index] = {} as KeyMap;
+      }
+
+      groups[index][keys] = {
+        group: index,
+        action: a,
+        pressed: false,
+      };
+
+      index = index + 1;
     }
   };
 };

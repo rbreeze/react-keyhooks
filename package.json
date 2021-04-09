@@ -1,15 +1,12 @@
 {
-  "name": "@rbreeze/react-keypress",
-  "version": "0.1.2",
+  "name": "react-keyhooks",
+  "version": "0.1.3",
   "description": "Keybinding hooks for React",
   "main": "index.ts",
   "repository": "git://github.com/rbreeze/react-keypress.git",
-  "author": "Remington Breeze",
+  "author": "Remington Breeze <remington@breeze.software>",
   "license": "MIT",
   "private": false,
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "dependencies": {
     "@types/react": "^17.0.2",
     "react": "^17.0.1"
